@@ -8,16 +8,28 @@
 #include "glm\gtc\matrix_transform.hpp"
 #include "glm\gtx\transform.hpp"
 #include "glm\gtc\type_ptr.hpp"
+#include "Button.h"
+#include <memory>
+
+const int WIDTH = 1200, HEIGHT = 900;
+
 
 bool glCalls();
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+void mouse_callback(GLFWwindow* window, int button, int action, int modifier);
 bool setWindow(GLFWwindow* w);
 void vSync(float& dt, float& lastTime);
+void setNewClearColor();
+
+//Create a simple button, 
+//TODO create "ui handler"
+//TODO bind to a new quad and create shaders
+Button testButton(0.45, 0.55, 0.45, 0.55, setNewClearColor);
+
 
 int main()
 {
 	if (!glCalls())return 0;
-	int WIDTH = 1200, HEIGHT = 900;
 
 	// Open a window and create its OpenGL context
 	Window w(WIDTH, HEIGHT, "UI");
@@ -45,8 +57,10 @@ int main()
 	util::loadOBJ(path, obj_vertices, obj_uvs, obj_normals);
 	GLuint vao = util::bindLoadedObj(obj_vertices, obj_uvs, obj_normals);
 	
+
 	glfwPollEvents();
 	glBindVertexArray(vao);
+	glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 	while (!glfwWindowShouldClose(window))
 	{
 		vSync(dT, lastTime);
@@ -109,7 +123,7 @@ bool glCalls()
 	//glEnable(GL_ALPHA_TEST);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glEnable(GL_BLEND);
-	glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	return true;
 }
@@ -122,6 +136,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 bool setWindow(GLFWwindow* w)
 {
+
 	glfwMakeContextCurrent(w); // Initialize GLEW
 	glewExperimental = true; // Needed in core profile
 	if (glewInit() != GLEW_OK) {
@@ -130,6 +145,23 @@ bool setWindow(GLFWwindow* w)
 	}
 
 	glfwSetInputMode(w, GLFW_STICKY_KEYS, GL_TRUE);
+	//set mouse callback
 	glfwSetKeyCallback(w, key_callback);
+	//Set mouse callback
+	glfwSetMouseButtonCallback(w, mouse_callback);
 	return true;
+}
+
+void setNewClearColor() {
+	glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
+}
+
+// Is called whenever a mouse button is pressed/released via GLFW
+void mouse_callback(GLFWwindow* window, int button, int action, int modifier)
+{
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+	if (action == GLFW_PRESS && button == GLFW_MOUSE_BUTTON_1) {
+		testButton.checkClick(xpos/double(WIDTH), ypos/double(HEIGHT) );
+	}
 }
